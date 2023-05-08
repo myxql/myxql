@@ -17,8 +17,8 @@ public class SparkSQLTableLineageParserTest {
     public void createDatabaseTest() {
         String sql = "CREATE DATABASE IF NOT EXISTS myxql";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Database) {
                 String name = ((Database) stmt).getDatabaseName();
@@ -34,8 +34,8 @@ public class SparkSQLTableLineageParserTest {
     public void createDatabaseWithLocationTest() {
         String sql = "CREATE DATABASE IF NOT EXISTS myxql location 'hdfs://hive/apps/myxql'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Database) {
                 Database database = (Database) stmt;
@@ -54,8 +54,8 @@ public class SparkSQLTableLineageParserTest {
     public void dropDatabaseTest() {
         String sql = "drop DATABASE IF EXISTS myxql";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Database) {
                 String name = ((Database) stmt).getDatabaseName();
@@ -71,8 +71,8 @@ public class SparkSQLTableLineageParserTest {
     public void descDatabaseTest() {
         String sql = "desc database myxql";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Database) {
                 String name = ((Database) stmt).getDatabaseName();
@@ -100,8 +100,8 @@ public class SparkSQLTableLineageParserTest {
             "STORED AS ORC " +
             "TBLPROPERTIES ('dataCenter'='hangzhou')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = ((Table) stmt);
@@ -132,8 +132,8 @@ public class SparkSQLTableLineageParserTest {
                 "comment 'user info' " +
                 "PARTITIONED BY (ds string, event_type string)";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -161,8 +161,8 @@ public class SparkSQLTableLineageParserTest {
             ") " +
             "comment	'计算集群'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -185,8 +185,8 @@ public class SparkSQLTableLineageParserTest {
             "stored as iceberg " +
             "PARTITIONED BY (ds string)";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -213,8 +213,8 @@ public class SparkSQLTableLineageParserTest {
             "TBLPROPERTIES ( " +
             "'transient_lastDdlTime' = '1627281671')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -242,8 +242,8 @@ public class SparkSQLTableLineageParserTest {
             "PARTITIONED BY (the_date, the_nums) " +
             "TBLPROPERTIES ('transient_lastDdlTime' = '1627288235')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -266,8 +266,8 @@ public class SparkSQLTableLineageParserTest {
         String sql = "CREATE TABLE test_demo_test (name string, age int) " +
             "using orc";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -310,9 +310,9 @@ public class SparkSQLTableLineageParserTest {
              ") " +
             "partitioned by (dt)";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.CREATE_TABLE, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.CREATE_TABLE, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -344,9 +344,9 @@ public class SparkSQLTableLineageParserTest {
              ") " +
             "partitioned by (dt)";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.CREATE_TABLE, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.CREATE_TABLE, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -374,9 +374,9 @@ public class SparkSQLTableLineageParserTest {
             "USING iceberg PARTITIONED BY (days(ts))";
         //trimIndent();
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.CREATE_TABLE, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.CREATE_TABLE, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -404,9 +404,9 @@ public class SparkSQLTableLineageParserTest {
              ") " +
             "partitioned by (dt)";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.REPLACE_TABLE, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.REPLACE_TABLE, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -430,8 +430,8 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void descTableTest0() {
         String sql = "desc table users";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -448,12 +448,12 @@ public class SparkSQLTableLineageParserTest {
     public void descPartitionTest() {
         String sql = "DESC formatted user partition(ds=20190708)";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
-                Assert.assertEquals(StatementType.DESC_TABLE, statementData.getType());
+                Assert.assertEquals(StatementType.DESC_TABLE, statementLineage.getType());
                 Assert.assertEquals("user", table.getTableName());
             } else {
                 Assert.fail();
@@ -466,8 +466,8 @@ public class SparkSQLTableLineageParserTest {
     public void createTableLikeTest() {
         String sql = "create table IF NOT EXISTS test.sale_detail_like  like demo.sale_detail";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof CreateTableLike) {
                 CreateTableLike createTableLike = (CreateTableLike) stmt;
@@ -485,13 +485,13 @@ public class SparkSQLTableLineageParserTest {
     public void createTableSelectTest() {
         String sql = "create table \nIF NOT EXISTS tdl_users_1 STORED AS ORC as select *, bigdata.TEST(name) from bigdata.users a left outer join address b on a.addr_id = b.id";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
                 String name = table.getTableName();
-                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementData.getType());
+                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementLineage.getType());
                 Assert.assertEquals(table.getFileFormat().get(), "ORC");
                 Assert.assertEquals("tdl_users_1", name);
                 Assert.assertEquals("select *, bigdata.TEST(name) from bigdata.users a left outer join address b on a.addr_id = b.id", table.getQuerySql().get());
@@ -514,13 +514,13 @@ public class SparkSQLTableLineageParserTest {
                "PARTITIONED BY (b) " +
                "AS SELECT 1 as a, \"a\" as b";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
                 String name = table.getTableName();
-                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementData.getType());
+                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementLineage.getType());
                 Assert.assertEquals("ICEBERG", table.getFileFormat().get());
                 Assert.assertEquals("t", name);
                 Assert.assertEquals("SELECT 1 as a, \"a\" as b", table.getQuerySql().get());
@@ -536,13 +536,13 @@ public class SparkSQLTableLineageParserTest {
     public void createTableSelectTest2() {
         String sql = "create table \nIF NOT EXISTS tdl_users_1 using parquet as (select * from users a left outer join address b on a.addr_id = b.id)";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
                 String name = table.getTableName();
-                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementData.getType());
+                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementLineage.getType());
                 Assert.assertEquals("tdl_users_1", name);
                 Assert.assertEquals("select * from users a left outer join address b on a.addr_id = b.id", table.getQuerySql().get());
                 Assert.assertEquals(2, table.getTableData().get().getInputTables().size());
@@ -560,13 +560,13 @@ public class SparkSQLTableLineageParserTest {
         String sql = "create table \nIF NOT EXISTS tdl_users_1 using parquet as (select * from users a left outer join address b on a.addr_id = b.id" +
                 " left outer join `bigdata`.users c on c.userid_id = a.id)";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
                 String name = table.getTableName();
-                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementData.getType());
+                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementLineage.getType());
                 Assert.assertEquals("tdl_users_1", name);
                 //Assert.assertEquals("select * from users a left outer join address b on a.addr_id = b.id", statement.querySql)
                 Assert.assertEquals(3, table.getTableData().get().getInputTables().size());
@@ -583,13 +583,13 @@ public class SparkSQLTableLineageParserTest {
         String sql = "create table huaixin_rp.bigdata.test_iceberg_1 using iceberg PARTITIONED BY(ds) as " +
                 "SELECT 'xxx' as name, 23 as price, '20211203' as ds";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
                 String name = table.getTableName();
-                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementData.getType());
+                Assert.assertEquals(StatementType.CREATE_TABLE_AS_SELECT, statementLineage.getType());
                 Assert.assertEquals("test_iceberg_1", name);
                 Assert.assertEquals("SELECT 'xxx' as name, 23 as price, '20211203' as ds", table.getQuerySql().get());
             } else {
@@ -603,13 +603,13 @@ public class SparkSQLTableLineageParserTest {
     public void replaceTableSelectTest() {
         String sql = "create or replace table tdl_users_1 STORED AS ORC as select * from bigdata.users a left outer join address b on a.addr_id = b.id";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
                 String name = table.getTableName();
-                Assert.assertEquals(StatementType.REPLACE_TABLE_AS_SELECT, statementData.getType());
+                Assert.assertEquals(StatementType.REPLACE_TABLE_AS_SELECT, statementLineage.getType());
                 Assert.assertEquals(table.getFileFormat().get(), "ORC");
                 Assert.assertEquals("tdl_users_1", name);
                 Assert.assertEquals("select * from bigdata.users a left outer join address b on a.addr_id = b.id", table.getQuerySql().get());
@@ -627,8 +627,8 @@ public class SparkSQLTableLineageParserTest {
     public void dropTableTest() {
         String sql = "drop table if exists sale_detail_drop2";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -645,8 +645,8 @@ public class SparkSQLTableLineageParserTest {
     public void dropViewTest() {
         String sql = "drop view if exists sale_detail_drop2";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof View) {
                 View view = (View) stmt;
@@ -663,8 +663,8 @@ public class SparkSQLTableLineageParserTest {
     public void truncateTableTest() {
         String sql = "TRUNCATE TABLE test.user partition(ds='20170403')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -684,8 +684,8 @@ public class SparkSQLTableLineageParserTest {
             "as " +
             "select * from account ";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof View) {
                 View view = (View) stmt;
@@ -707,8 +707,8 @@ public class SparkSQLTableLineageParserTest {
             "as " +
             "select *, bigdata.test(name) from account";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof View) {
                 View view = (View) stmt;
@@ -730,8 +730,8 @@ public class SparkSQLTableLineageParserTest {
     public void alterViewTest0() {
         String sql = "ALTER VIEW v1 AS SELECT x, UPPER(s) s FROM t2";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof View) {
                 View view = (View) stmt;
@@ -749,8 +749,8 @@ public class SparkSQLTableLineageParserTest {
     public void renameTableTest() {
         String sql = "alter table test.table_name rename to new_table_name";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof RenameTable) {
                 RenameTable table = (RenameTable) stmt;
@@ -767,12 +767,12 @@ public class SparkSQLTableLineageParserTest {
     public void alterTablePropertiesTest() {
         String sql = "ALTER TABLE test.sale_detail SET TBLPROPERTIES ('comment' = 'new coments for statement sale_detail', 'lifeCycle' = '7')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
-                Assert.assertEquals(StatementType.ALTER_TABLE_PROPERTIES, statementData.getType());
+                Assert.assertEquals(StatementType.ALTER_TABLE_PROPERTIES, statementLineage.getType());
                 String name = table.getTableName();
                 Assert.assertEquals("sale_detail", name);
             } else {
@@ -786,12 +786,12 @@ public class SparkSQLTableLineageParserTest {
     public void addColumnsTest() {
         String sql = "alter table test.sale_detail add columns (col_name1 string comment 'col_name1', col_name2 string comment 'col_name2')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
-                Assert.assertEquals(StatementType.ALTER_TABLE_ADD_COLS, statementData.getType());
+                Assert.assertEquals(StatementType.ALTER_TABLE_ADD_COLS, statementLineage.getType());
                 String name = table.getTableName();
                 Assert.assertEquals("sale_detail", name);
                 Assert.assertEquals(2, table.getColumns().get().size());
@@ -806,12 +806,12 @@ public class SparkSQLTableLineageParserTest {
     public void addColumnTest() {
         String sql = "ALTER TABLE db.sample ADD COLUMN age int FIRST";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
-                Assert.assertEquals(StatementType.ALTER_TABLE_ADD_COL, statementData.getType());
+                Assert.assertEquals(StatementType.ALTER_TABLE_ADD_COL, statementLineage.getType());
                 String name = table.getTableName();
                 Assert.assertEquals("sample", name);
                 Assert.assertEquals(1, table.getColumns().get().size());
@@ -826,12 +826,12 @@ public class SparkSQLTableLineageParserTest {
     public void renameColumnTest() {
         String sql = "ALTER TABLE db.sample RENAME COLUMN data TO payload";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
-                Assert.assertEquals(StatementType.ALTER_TABLE_RENAME_COL, statementData.getType());
+                Assert.assertEquals(StatementType.ALTER_TABLE_RENAME_COL, statementLineage.getType());
                 String name = column.getTableName();
                 Assert.assertEquals("sample", name);
                 Assert.assertEquals("payload", column.getAction().get().getNewColumName().get());
@@ -845,9 +845,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void changeColumnTest() {
         String sql = "ALTER TABLE db.sample ALTER COLUMN location.lat TYPE double";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
@@ -860,9 +860,9 @@ public class SparkSQLTableLineageParserTest {
         });
 
         sql = "ALTER TABLE db.sample ALTER COLUMN id DROP NOT NULL";
-        statementData = parserService.parseSqlTableLineage(sql);
-        statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementData.getType());
+        statementLineage = parserService.parseSqlTableLineage(sql);
+        statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
@@ -875,9 +875,9 @@ public class SparkSQLTableLineageParserTest {
         });
 
         sql = "ALTER TABLE db.sample ALTER COLUMN point.z AFTER y";
-        statementData = parserService.parseSqlTableLineage(sql);
-        statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementData.getType());
+        statementLineage = parserService.parseSqlTableLineage(sql);
+        statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
@@ -890,9 +890,9 @@ public class SparkSQLTableLineageParserTest {
         });
 
         sql = "ALTER TABLE db.sample ALTER COLUMN id COMMENT 'unique id'";
-        statementData = parserService.parseSqlTableLineage(sql);
-        statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementData.getType());
+        statementLineage = parserService.parseSqlTableLineage(sql);
+        statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
@@ -913,9 +913,9 @@ public class SparkSQLTableLineageParserTest {
         });
 
         sql = "ALTER TABLE demo CHANGE COLUMN price Type float COMMENT '价格'";
-        statementData = parserService.parseSqlTableLineage(sql);
-        statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementData.getType());
+        statementLineage = parserService.parseSqlTableLineage(sql);
+        statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
@@ -933,9 +933,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void changeColumnTest1() {
         String sql = "ALTER TABLE test_user11_dt ALTER COLUMN ds comment 'ddd'";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_CHANGE_COL, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
@@ -968,9 +968,9 @@ public class SparkSQLTableLineageParserTest {
     public void dropColumnTest() {
         String sql = "ALTER TABLE db.sample DROP COLUMN id";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_DROP_COL, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_DROP_COL, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
@@ -987,9 +987,9 @@ public class SparkSQLTableLineageParserTest {
     public void setTableLocationTest() {
         String sql = "alter table demo partition(ds='20180317') set location '/user/hive'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_SET_LOCATION, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_SET_LOCATION, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableSource) {
                 TableSource tableSource = (TableSource) stmt;
@@ -1006,8 +1006,8 @@ public class SparkSQLTableLineageParserTest {
     public void updateColumnTest() {
         String sql = "ALTER TABLE sale_detail CHANGE COLUMN old_col_name new_col_name string comment 'sdsd'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
@@ -1022,8 +1022,8 @@ public class SparkSQLTableLineageParserTest {
 
         String sql1 = "ALTER TABLE test_users_dt CHANGE age2 age3 int";
 
-        StatementData statementData1 = parserService.parseSqlTableLineage(sql1);
-        Optional<Statement> statement1 = statementData1.getStatement();
+        StatementLineage statementLineage1 = parserService.parseSqlTableLineage(sql1);
+        Optional<Statement> statement1 = statementLineage1.getStatement();
         statement1.map(stmt -> {
             if (stmt instanceof AlterColumn) {
                 AlterColumn column = (AlterColumn) stmt;
@@ -1040,9 +1040,9 @@ public class SparkSQLTableLineageParserTest {
     public void dropPartitionTest0() {
         String sql = "ALTER TABLE page_view DROP IF EXISTS PARTITION (dt='2008-08-08', country='us'), PARTITION (dt='2008-08-09', country='us')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_DROP_PARTS, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_DROP_PARTS, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof DropTablePartition) {
                 DropTablePartition tablePartition = (DropTablePartition) stmt;
@@ -1061,9 +1061,9 @@ public class SparkSQLTableLineageParserTest {
     public void dropPartitionTest1() {
         String sql = "ALTER TABLE page_view DROP PARTITION (dt='2008-08-08', country='us'), PARTITION (dt='2008-08-09', country='us')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_DROP_PARTS, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_DROP_PARTS, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof DropTablePartition) {
                 DropTablePartition tablePartition = (DropTablePartition) stmt;
@@ -1082,9 +1082,9 @@ public class SparkSQLTableLineageParserTest {
     public void addPartitionTest0() {
         String sql = "ALTER TABLE page_view ADD PARTITION (partCol = 'value1') ";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_ADD_PARTS, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_ADD_PARTS, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof AddTablePartition) {
                 AddTablePartition tablePartition = (AddTablePartition) stmt;
@@ -1103,9 +1103,9 @@ public class SparkSQLTableLineageParserTest {
     public void addPartitionTest1() {
         String sql = "ALTER TABLE page_view add IF NOT EXISTS PARTITION (dt='2008-08-08', country='us')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.ALTER_TABLE_ADD_PARTS, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.ALTER_TABLE_ADD_PARTS, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof AddTablePartition) {
                 AddTablePartition tablePartition = (AddTablePartition) stmt;
@@ -1124,8 +1124,8 @@ public class SparkSQLTableLineageParserTest {
     public void renamePartitionTest() {
         String sql = "ALTER TABLE page_view PARTITION (dt='2008-08-08')  RENAME TO PARTITION (dt='20080808')";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -1143,8 +1143,8 @@ public class SparkSQLTableLineageParserTest {
         String sql = "CREATE FUNCTION train_perceptron AS 'hivemall.classifier.PerceptronUDTF' " +
                 "using jar 'hdfs://tdhdfs/user/datacompute/platformtool/resources/132/latest/hivemall-spark.jar'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Function) {
                 Function func = (Function) stmt;
@@ -1161,8 +1161,8 @@ public class SparkSQLTableLineageParserTest {
     public void createFuncTest1() {
         String sql = "CREATE TEMPORARY FUNCTION IF NOT EXISTS stream_json_extract_value AS 'com.dataworker.spark.jobserver.driver.udf.GenericUDTFJsonExtractValue'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Function) {
                 Function func = (Function) stmt;
@@ -1179,8 +1179,8 @@ public class SparkSQLTableLineageParserTest {
     public void dropFuncTest() {
         String sql = "drop FUNCTION train_perceptron";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Function) {
                 Function func = (Function) stmt;
@@ -1196,8 +1196,8 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void descFunctionTest() {
         String sql = "desc function random_int";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Function) {
                 Function func = (Function) stmt;
@@ -1213,9 +1213,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void queryTest0() {
         String sql = "select * from `demo_rp`.bigdata.users a join address b on a.addr_id=b.id limit 101";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1235,9 +1235,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void queryTest1() {
         String sql = "select * from (select * from users where name='melin') a limit 1001";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1254,9 +1254,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void queryTest2() {
         String sql = "select * from users a join (select * from address where type='hangzhou') b on a.addr_id=b.id limit 101";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1277,9 +1277,9 @@ public class SparkSQLTableLineageParserTest {
                 "from (select lag(bzdy) over (order by week) bzdys, bzhyyh, bzdy, week " +
                 "from (select count(distinct partner_code) bzhyyh, count(1) bzdy, week from tdl_dt2x_table)) limit 111";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1297,9 +1297,9 @@ public class SparkSQLTableLineageParserTest {
     public void queryTest4() {
         String sql = "select 2-1";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
             } else {
@@ -1328,9 +1328,9 @@ public class SparkSQLTableLineageParserTest {
                 "     where t.`lifecycle` == 1" +
                 "     group by t.table_name,t.owner,t.database_name ";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1346,9 +1346,9 @@ public class SparkSQLTableLineageParserTest {
     public void queryTest6() {
         String sql = "select * from test";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1364,9 +1364,9 @@ public class SparkSQLTableLineageParserTest {
     public void queryTest7() {
         String sql = "select true is false";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
             } else {
@@ -1380,9 +1380,9 @@ public class SparkSQLTableLineageParserTest {
     public void queryTest8() {
         String sql = "select 'test' as name";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
             } else {
@@ -1395,11 +1395,11 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void insertIntoTest0() {
         String sql = "insert into TABLE users PARTITION(ds='20170220') values('libinsong', 12, 'test'), ('libinsong', 13, 'test')";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_VALUES, statementData.getType());
-        if(statementData.getValues().isPresent()) {
-            Assert.assertEquals(2, statementData.getValues().get().size());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_VALUES, statementLineage.getType());
+        if(statementLineage.getValues().isPresent()) {
+            Assert.assertEquals(2, statementLineage.getValues().get().size());
         }
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
@@ -1416,11 +1416,11 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void insertIntoTest1() {
         String sql = "insert into bigdata.delta_lsw_test values('lsw'),('lsw1')";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_VALUES, statementData.getType());
-        if(statementData.getValues().isPresent()) {
-            Assert.assertEquals(2, statementData.getValues().get().size());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_VALUES, statementLineage.getType());
+        if(statementLineage.getValues().isPresent()) {
+            Assert.assertEquals(2, statementLineage.getValues().get().size());
         }
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
@@ -1437,9 +1437,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void insertTableCustomColumn() {
         String sql = "INSERT INTO test_demo_test (name) VALUES('lisi')";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_VALUES, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_VALUES, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1455,9 +1455,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void insertOverwriteTest0() {
         String sql = "insert OVERWRITE TABLE users PARTITION(ds='20170220') values('libinsong')";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_VALUES, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_VALUES, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1474,9 +1474,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void insertOverwriteTest1() {
         String sql = "insert OVERWRITE TABLE users PARTITION(ds) values('libinsong', '20170220')";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_VALUES, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_VALUES, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1493,9 +1493,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void insertOverwriteQueryTest2() {
         String sql = "insert INTO users PARTITION(ds='20170220') select * from account a join address b on a.addr_id=b.id";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1511,15 +1511,15 @@ public class SparkSQLTableLineageParserTest {
             }
             return null;
         });
-        Assert.assertEquals(statementData.getQuerySql().get(), "select * from account a join address b on a.addr_id=b.id");
+        Assert.assertEquals(statementLineage.getQuerySql().get(), "select * from account a join address b on a.addr_id=b.id");
     }
 
     @Test
     public void insertOverwriteQueryTest3() {
         String sql = "insert INTO users select *, bigdata.Test(id) from account a join address b on a.addr_id=b.id";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1537,16 +1537,16 @@ public class SparkSQLTableLineageParserTest {
             }
             return null;
         });
-        Assert.assertEquals(statementData.getQuerySql().get(), "select *, bigdata.Test(id) from account a join address b on a.addr_id=b.id");
+        Assert.assertEquals(statementLineage.getQuerySql().get(), "select *, bigdata.Test(id) from account a join address b on a.addr_id=b.id");
     }
 
     @Test
     public void insertOverwriteQueryTest4() {
         String sql = "insert OVERWRITE TABLE users PARTITION(ds='20170220') select * from account1 union all " +
                 "select * from account2";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1562,7 +1562,7 @@ public class SparkSQLTableLineageParserTest {
             }
             return null;
         });
-        Assert.assertEquals(statementData.getQuerySql().get(), "select * from account1 union all select * from account2");
+        Assert.assertEquals(statementLineage.getQuerySql().get(), "select * from account1 union all select * from account2");
     }
 
     @Test
@@ -1572,9 +1572,9 @@ public class SparkSQLTableLineageParserTest {
                 "INSERT OVERWRITE TABLE toodey2 SELECT sample_07.code,sample_07.salary WHERE sample_07.salary >= 50000 " +
                 "INSERT OVERWRITE TABLE toodey3 SELECT sample_07.total_emp,sample_07.salary WHERE sample_07.salary <= 50000";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.MULTI_INSERT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.MULTI_INSERT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1591,13 +1591,13 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void showTablesTest() {
         String sql = "show Tables";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.SHOW_TABLES, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.SHOW_TABLES, statementLineage.getType());
 
         sql = "show Tables in bigdata";
-        statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.SHOW_TABLES, statementData.getType());
-        Optional<Statement> statement = statementData.getStatement();
+        statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.SHOW_TABLES, statementLineage.getType());
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Database) {
                 Database database = (Database) stmt;
@@ -1609,9 +1609,9 @@ public class SparkSQLTableLineageParserTest {
         });
 
         sql = "show Tables from bigdata";
-        statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.SHOW_TABLES, statementData.getType());
-        statement = statementData.getStatement();
+        statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.SHOW_TABLES, statementLineage.getType());
+        statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Database) {
                 Database database = (Database) stmt;
@@ -1626,13 +1626,13 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void showViewsTest() {
         String sql = "show views";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.SHOW_VIEWS, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.SHOW_VIEWS, statementLineage.getType());
 
         sql = "show views in bigdata";
-        statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.SHOW_VIEWS, statementData.getType());
-        Optional<Statement> statement = statementData.getStatement();
+        statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.SHOW_VIEWS, statementLineage.getType());
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Database) {
                 Database database = (Database) stmt;
@@ -1644,9 +1644,9 @@ public class SparkSQLTableLineageParserTest {
         });
 
         sql = "show views from bigdata";
-        statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.SHOW_VIEWS, statementData.getType());
-        statement = statementData.getStatement();
+        statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.SHOW_VIEWS, statementLineage.getType());
+        statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Database) {
                 Database database = (Database) stmt;
@@ -1662,9 +1662,9 @@ public class SparkSQLTableLineageParserTest {
     public void useTest() {
         String sql = "use bigdata";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.USE, statementData.getType());
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.USE, statementLineage.getType());
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Database) {
                 Database database = (Database) stmt;
@@ -1680,25 +1680,25 @@ public class SparkSQLTableLineageParserTest {
     public void setTest() {
         String sql = "set spark.executor.memory=30g";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.SET, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.SET, statementLineage.getType());
     }
 
     @Test
     public void substrFile() {
         String sql = "SELECT substring('Spark SQL' from 5)";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
     }
 
     @Test
     public void deleteTest() {
         String sql = "delete from aa.user where name='xc'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.DELETE, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.DELETE, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof DeleteTable) {
                 DeleteTable table = (DeleteTable) stmt;
@@ -1715,9 +1715,9 @@ public class SparkSQLTableLineageParserTest {
     public void updateTest0() {
         String sql = "update user set name='xxx', age=20 where id=2";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.UPDATE, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.UPDATE, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof UpdateTable) {
                 UpdateTable updateTable = (UpdateTable) stmt;
@@ -1734,9 +1734,9 @@ public class SparkSQLTableLineageParserTest {
     public void updateTest1() {
         String sql = "update user set name='xxx'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.UPDATE, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.UPDATE, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof UpdateTable) {
                 UpdateTable updateTable = (UpdateTable) stmt;
@@ -1754,9 +1754,9 @@ public class SparkSQLTableLineageParserTest {
             "q2 as ( select key from test where key = '5') " +
             "select * from (select key from q1) a";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1772,9 +1772,9 @@ public class SparkSQLTableLineageParserTest {
     @Test
     public void insertTest0() {
         String sql = "INSERT INTO TABLE db_test.table_result SELECT t1.id, name FROM ( SELECT id1 + id2 AS id FROM db_test.table1 ) t1 LEFT JOIN ( SELECT id, name FROM ( SELECT id, sourcename AS name FROM db_test.table2 ) ) t2 ON t1.id=t2.id";
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1798,9 +1798,9 @@ public class SparkSQLTableLineageParserTest {
             "insert overwrite table srcp partition (p='abc') " +
             "select * from d union all select * from e";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
@@ -1821,8 +1821,8 @@ public class SparkSQLTableLineageParserTest {
                     ") COMMENT '原始数据表' " +
                     "LOCATION 'hdfs://hive/test/'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -1846,8 +1846,8 @@ public class SparkSQLTableLineageParserTest {
                     "STORED AS orc " +
                     "comment 'orc测试'";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof Table) {
                 Table table = (Table) stmt;
@@ -1866,9 +1866,9 @@ public class SparkSQLTableLineageParserTest {
     public void countCondTest() {
         String sql = "select count(type='mac' or null) From test_table where a=2";
 
-        StatementData statementData = parserService.parseSqlTableLineage(sql);
-        Assert.assertEquals(StatementType.SELECT, statementData.getType());
-        Optional<Statement> statement = statementData.getStatement();
+        StatementLineage statementLineage = parserService.parseSqlTableLineage(sql);
+        Assert.assertEquals(StatementType.SELECT, statementLineage.getType());
+        Optional<Statement> statement = statementLineage.getStatement();
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;

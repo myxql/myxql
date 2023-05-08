@@ -16,44 +16,44 @@ public class SparkSQLFieldLineageParserTest {
     public void insertQueryTest1() {
         String sql = "INSERT INTO TABLE db_test.table_result(idd, name) SELECT t1.id, name_x FROM ( SELECT id1 + id2 AS id FROM db_test.table1 ) t1 LEFT JOIN ( SELECT id, name_x FROM ( SELECT id, sourcename AS name_x FROM db_test.table2 ) ) t2 ON t1.id=t2.id";
 
-        StatementData statementData = parserService.parseSqlFieldLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlFieldLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
-                List<ColumnData> columnDataList = tableData.getColumnDatas().get();
-                Assert.assertEquals(2, columnDataList.size());
-                Assert.assertEquals(3, columnDataList.get(0).getSourceFields().size());
-                Assert.assertEquals(1, columnDataList.get(1).getSourceFields().size());
+                List<ColumnLineage> columnLineageList = tableData.getColumnDatas().get();
+                Assert.assertEquals(2, columnLineageList.size());
+                Assert.assertEquals(3, columnLineageList.get(0).getSourceFields().size());
+                Assert.assertEquals(1, columnLineageList.get(1).getSourceFields().size());
             } else {
                 Assert.fail();
             }
             return null;
         });
-        Assert.assertEquals(statementData.getQuerySql().get(), "INSERT INTO TABLE db_test.table_result(idd, name) SELECT t1.id, name_x FROM ( SELECT id1 + id2 AS id FROM db_test.table1 ) t1 LEFT JOIN ( SELECT id, name_x FROM ( SELECT id, sourcename AS name_x FROM db_test.table2 ) ) t2 ON t1.id=t2.id");
+        Assert.assertEquals(statementLineage.getQuerySql().get(), "INSERT INTO TABLE db_test.table_result(idd, name) SELECT t1.id, name_x FROM ( SELECT id1 + id2 AS id FROM db_test.table1 ) t1 LEFT JOIN ( SELECT id, name_x FROM ( SELECT id, sourcename AS name_x FROM db_test.table2 ) ) t2 ON t1.id=t2.id");
     }
 
     @Test
     public void insertQueryTest2() {
         String sql = "INSERT INTO TABLE db_test.table_result SELECT t1.id, name_x FROM ( SELECT id1 + id2 AS id FROM db_test.table1 ) t1 LEFT JOIN ( SELECT id, name_x FROM ( SELECT id, sourcename AS name_x FROM db_test.table2 ) ) t2 ON t1.id=t2.id";
 
-        StatementData statementData = parserService.parseSqlFieldLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlFieldLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
-                List<ColumnData> columnDataList = tableData.getColumnDatas().get();
-                Assert.assertEquals(2, columnDataList.size());
-                Assert.assertEquals(3, columnDataList.get(0).getSourceFields().size());
-                Assert.assertEquals(1, columnDataList.get(1).getSourceFields().size());
+                List<ColumnLineage> columnLineageList = tableData.getColumnDatas().get();
+                Assert.assertEquals(2, columnLineageList.size());
+                Assert.assertEquals(3, columnLineageList.get(0).getSourceFields().size());
+                Assert.assertEquals(1, columnLineageList.get(1).getSourceFields().size());
             } else {
                 Assert.fail();
             }
             return null;
         });
-        Assert.assertEquals(statementData.getQuerySql().get(), "INSERT INTO TABLE db_test.table_result SELECT t1.id, name_x FROM ( SELECT id1 + id2 AS id FROM db_test.table1 ) t1 LEFT JOIN ( SELECT id, name_x FROM ( SELECT id, sourcename AS name_x FROM db_test.table2 ) ) t2 ON t1.id=t2.id");
+        Assert.assertEquals(statementLineage.getQuerySql().get(), "INSERT INTO TABLE db_test.table_result SELECT t1.id, name_x FROM ( SELECT id1 + id2 AS id FROM db_test.table1 ) t1 LEFT JOIN ( SELECT id, name_x FROM ( SELECT id, sourcename AS name_x FROM db_test.table2 ) ) t2 ON t1.id=t2.id");
     }
 
     @Test
@@ -63,20 +63,20 @@ public class SparkSQLFieldLineageParserTest {
                 "INSERT OVERWRITE TABLE toodey2 SELECT sample_07.code1,sample_07.salary1 WHERE sample_07.salary >= 50000 " +
                 "INSERT OVERWRITE TABLE toodey3 SELECT sample_07.total_emp,sample_07.salary WHERE sample_07.salary <= 50000";
 
-        StatementData statementData = parserService.parseSqlFieldLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.MULTI_INSERT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlFieldLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.MULTI_INSERT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
-                List<ColumnData> columnDataList = tableData.getColumnDatas().get();
-                Assert.assertEquals(6, columnDataList.size());
-                Assert.assertEquals(1, columnDataList.get(0).getSourceFields().size());
-                Assert.assertEquals(1, columnDataList.get(1).getSourceFields().size());
-                Assert.assertEquals(1, columnDataList.get(2).getSourceFields().size());
-                Assert.assertEquals(1, columnDataList.get(3).getSourceFields().size());
-                Assert.assertEquals(1, columnDataList.get(4).getSourceFields().size());
-                Assert.assertEquals(1, columnDataList.get(5).getSourceFields().size());
+                List<ColumnLineage> columnLineageList = tableData.getColumnDatas().get();
+                Assert.assertEquals(6, columnLineageList.size());
+                Assert.assertEquals(1, columnLineageList.get(0).getSourceFields().size());
+                Assert.assertEquals(1, columnLineageList.get(1).getSourceFields().size());
+                Assert.assertEquals(1, columnLineageList.get(2).getSourceFields().size());
+                Assert.assertEquals(1, columnLineageList.get(3).getSourceFields().size());
+                Assert.assertEquals(1, columnLineageList.get(4).getSourceFields().size());
+                Assert.assertEquals(1, columnLineageList.get(5).getSourceFields().size());
             } else {
                 Assert.fail();
             }
@@ -94,16 +94,16 @@ public class SparkSQLFieldLineageParserTest {
                 "     FROM updates JOIN customers\n" +
                 "     ON updates.customerid = customers.customerid\n" +
                 "     WHERE customers.current = true AND updates.address <> customers.address\n";
-        StatementData statementData = parserService.parseSqlFieldLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlFieldLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
-                List<ColumnData> columnDataList = tableData.getColumnDatas().get();
-                Assert.assertEquals(2, columnDataList.size());
-                Assert.assertEquals(1, columnDataList.get(0).getSourceFields().size());
-                Assert.assertEquals(2, columnDataList.get(1).getSourceFields().size());
+                List<ColumnLineage> columnLineageList = tableData.getColumnDatas().get();
+                Assert.assertEquals(2, columnLineageList.size());
+                Assert.assertEquals(1, columnLineageList.get(0).getSourceFields().size());
+                Assert.assertEquals(2, columnLineageList.get(1).getSourceFields().size());
             } else {
                 Assert.fail();
             }
@@ -122,16 +122,16 @@ public class SparkSQLFieldLineageParserTest {
                 "insert overwrite table srcp partition (p='abc') " +
                 "select key,value from d union all select key,value from e";
 
-        StatementData statementData = parserService.parseSqlFieldLineage(sql);
-        Optional<Statement> statement = statementData.getStatement();
-        Assert.assertEquals(StatementType.INSERT_SELECT, statementData.getType());
+        StatementLineage statementLineage = parserService.parseSqlFieldLineage(sql);
+        Optional<Statement> statement = statementLineage.getStatement();
+        Assert.assertEquals(StatementType.INSERT_SELECT, statementLineage.getType());
         statement.map(stmt -> {
             if (stmt instanceof TableData) {
                 TableData tableData = (TableData) stmt;
-                List<ColumnData> columnDataList = tableData.getColumnDatas().get();
-                Assert.assertEquals(2, columnDataList.size());
-                Assert.assertEquals(1, columnDataList.get(0).getSourceFields().size());
-                Assert.assertEquals(2, columnDataList.get(1).getSourceFields().size());
+                List<ColumnLineage> columnLineageList = tableData.getColumnDatas().get();
+                Assert.assertEquals(2, columnLineageList.size());
+                Assert.assertEquals(1, columnLineageList.get(0).getSourceFields().size());
+                Assert.assertEquals(2, columnLineageList.get(1).getSourceFields().size());
             } else {
                 Assert.fail();
             }

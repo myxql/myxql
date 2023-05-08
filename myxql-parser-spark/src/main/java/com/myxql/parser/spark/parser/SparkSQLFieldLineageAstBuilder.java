@@ -39,14 +39,14 @@ public class SparkSQLFieldLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitSingleStatement(SqlBaseParser.SingleStatementContext ctx) {
+    public StatementLineage visitSingleStatement(SqlBaseParser.SingleStatementContext ctx) {
         // SingleInsertQuery or MultiInsertQuery
         InsertInto plan = (InsertInto) visit(ctx.statement());
         logger.info("visitSingleStatement, plan=" + JSONObject.toJSONString(plan));
         PlanParser planParser = new PlanParser();
         TableData tableData = planParser.parseTableData(plan);
-        StatementData statementData = new StatementData(this.statementType, Optional.ofNullable(tableData), this.command);
-        return statementData;
+        StatementLineage statementLineage = new StatementLineage(this.statementType, Optional.ofNullable(tableData), this.command);
+        return statementLineage;
     }
 
     // ------------- dml statement(insert/delete/update)---------------

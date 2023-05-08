@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class ColumnData {
+public class ColumnLineage {
     /**
      * 目标字段
      */
@@ -48,8 +48,8 @@ public class ColumnData {
             return false;
         }
         if (this != that) {
-            if (that instanceof ColumnData) {
-                ColumnData var2 = (ColumnData) that;
+            if (that instanceof ColumnLineage) {
+                ColumnLineage var2 = (ColumnLineage) that;
                 if (this.targetField.equals(var2.targetField) && this.sourceFields.equals(var2.sourceFields)) {
                     return true;
                 }

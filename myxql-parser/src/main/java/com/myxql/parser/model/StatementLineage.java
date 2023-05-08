@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class StatementData extends Statement implements Serializable {
+public class StatementLineage extends Statement implements Serializable {
     private StatementType type;
     private Optional<Statement> statement;
     private Optional<String> querySql;
@@ -35,22 +35,22 @@ public class StatementData extends Statement implements Serializable {
         this.values = var1;
     }
 
-    public StatementData(StatementType type, Optional<Statement> statement, Optional<String> querySql, Optional<List<List<String>>> values) {
+    public StatementLineage(StatementType type, Optional<Statement> statement, Optional<String> querySql, Optional<List<List<String>>> values) {
         super();
         this.type = Objects.requireNonNull(type, "type is null");
         this.statement = statement;
         this.querySql = querySql;
         this.values = values;
     }
-    public StatementData(StatementType type, Optional<Statement> statement, String querySql) {
+    public StatementLineage(StatementType type, Optional<Statement> statement, String querySql) {
         this(type, statement, Optional.ofNullable(querySql), Optional.empty());
     }
 
-    public StatementData(StatementType type, Optional<Statement> statement) {
+    public StatementLineage(StatementType type, Optional<Statement> statement) {
         this(type, statement, Optional.empty(), Optional.empty());
     }
 
-    public StatementData(StatementType type) {
+    public StatementLineage(StatementType type) {
         this(type, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
@@ -73,8 +73,8 @@ public class StatementData extends Statement implements Serializable {
             return false;
         }
         if (this != that) {
-            if (that instanceof StatementData) {
-                StatementData var2 = (StatementData)that;
+            if (that instanceof StatementLineage) {
+                StatementLineage var2 = (StatementLineage)that;
                 if (this.type.equals(var2.type) && this.statement.equals(var2.statement)
                         && this.querySql.equals(var2.querySql) && this.values.equals(var2.values)) {
                     return true;

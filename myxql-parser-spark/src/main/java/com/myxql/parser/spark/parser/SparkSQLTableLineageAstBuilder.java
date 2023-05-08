@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
-public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<StatementData> {
+public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<StatementLineage> {
     private StatementType currentOptType = StatementType.UNKOWN;
     private TableData tableData = new TableData();
     private Optional<String> multiInsertToken = Optional.empty();
@@ -40,8 +40,8 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitSingleStatement(SqlBaseParser.SingleStatementContext ctx) {
-        StatementData data = visit(ctx.statement());
+    public StatementLineage visitSingleStatement(SqlBaseParser.SingleStatementContext ctx) {
+        StatementLineage data = visit(ctx.statement());
         if (data == null) {
             throw SparkSQLTableLineageAstBuilder.parseError("不支持的SQL: " + command, ctx);
         }
@@ -131,7 +131,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
 
     // ---------- database ------------------
     @Override
-    public StatementData visitCreateNamespace(SqlBaseParser.CreateNamespaceContext ctx) {
+    public StatementLineage visitCreateNamespace(SqlBaseParser.CreateNamespaceContext ctx) {
         DatabaseName databaseName = parseDatabase(ctx.multipartIdentifier());
 
         List<String> locations = ctx.locationSpec().stream()
@@ -143,47 +143,47 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
 
         Database sqlData = new Database(databaseName.getCatalogName(), databaseName.getDatabaseName(), Optional.of(location));
 
-        StatementData statementData = new StatementData(StatementType.CREATE_DATABASE, Optional.of(sqlData));
-        return statementData;
+        StatementLineage statementLineage = new StatementLineage(StatementType.CREATE_DATABASE, Optional.of(sqlData));
+        return statementLineage;
     }
 
     @Override
-    public StatementData visitDropNamespace(SqlBaseParser.DropNamespaceContext ctx) {
+    public StatementLineage visitDropNamespace(SqlBaseParser.DropNamespaceContext ctx) {
         DatabaseName databaseName = parseDatabase(ctx.multipartIdentifier());
         Database sqlData = new Database(databaseName.getCatalogName(), databaseName.getDatabaseName());
-        return new StatementData(StatementType.DROP_DATABASE, Optional.of(sqlData));
+        return new StatementLineage(StatementType.DROP_DATABASE, Optional.of(sqlData));
     }
 
     @Override
-    public StatementData visitDescribeNamespace(SqlBaseParser.DescribeNamespaceContext ctx) {
+    public StatementLineage visitDescribeNamespace(SqlBaseParser.DescribeNamespaceContext ctx) {
         DatabaseName databaseName = parseDatabase(ctx.multipartIdentifier());
         Database sqlData = new Database(databaseName.getCatalogName(), databaseName.getDatabaseName());
-        return new StatementData(StatementType.DESC_DATABASE, Optional.of(sqlData));
+        return new StatementLineage(StatementType.DESC_DATABASE, Optional.of(sqlData));
     }
 
     @Override
-    public StatementData visitShowTables(SqlBaseParser.ShowTablesContext ctx) {
+    public StatementLineage visitShowTables(SqlBaseParser.ShowTablesContext ctx) {
         if (ctx.getChildCount() > 2) {
             DatabaseName databaseName = parseDatabase(ctx.multipartIdentifier());
-            return new StatementData(StatementType.SHOW_TABLES, Optional.of(new Database(databaseName.getCatalogName(), databaseName.getDatabaseName())));
+            return new StatementLineage(StatementType.SHOW_TABLES, Optional.of(new Database(databaseName.getCatalogName(), databaseName.getDatabaseName())));
         } else {
-            return new StatementData(StatementType.SHOW_TABLES);
+            return new StatementLineage(StatementType.SHOW_TABLES);
         }
     }
 
     @Override
-    public StatementData visitShowViews(SqlBaseParser.ShowViewsContext ctx) {
+    public StatementLineage visitShowViews(SqlBaseParser.ShowViewsContext ctx) {
         if (ctx.getChildCount() > 2) {
             DatabaseName databaseName = parseDatabase(ctx.multipartIdentifier());
-            return new StatementData(StatementType.SHOW_VIEWS, Optional.of(new Database(databaseName.getCatalogName(), databaseName.getDatabaseName())));
+            return new StatementLineage(StatementType.SHOW_VIEWS, Optional.of(new Database(databaseName.getCatalogName(), databaseName.getDatabaseName())));
         } else {
-            return new StatementData(StatementType.SHOW_VIEWS);
+            return new StatementLineage(StatementType.SHOW_VIEWS);
         }
     }
 
     // ---------- table ----------------------
     @Override
-    public StatementData visitCreateTable(SqlBaseParser.CreateTableContext ctx) {
+    public StatementLineage visitCreateTable(SqlBaseParser.CreateTableContext ctx) {
         TableName tableName = Optional.ofNullable(ctx.createTableHeader())
                 .map(SqlBaseParser.CreateTableHeaderContext::multipartIdentifier)
                 .map(this::parseTableName)
@@ -324,14 +324,14 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
             table.setQuerySql(Optional.of(querySql));
             super.visitQuery(ctx.query());
             table.setTableData(Optional.of(this.tableData));
-            return new StatementData(StatementType.CREATE_TABLE_AS_SELECT, Optional.of(table), Optional.of(querySql), Optional.empty());
+            return new StatementLineage(StatementType.CREATE_TABLE_AS_SELECT, Optional.of(table), Optional.of(querySql), Optional.empty());
         } else {
-            return new StatementData(StatementType.CREATE_TABLE, Optional.of(table));
+            return new StatementLineage(StatementType.CREATE_TABLE, Optional.of(table));
         }
     }
 
     @Override
-    public StatementData visitReplaceTable(SqlBaseParser.ReplaceTableContext ctx) {
+    public StatementLineage visitReplaceTable(SqlBaseParser.ReplaceTableContext ctx) {
         TableName tableName = parseTableName(ctx.replaceTableHeader().multipartIdentifier());
         String comment = ctx.createTableClauses().commentSpec().size() > 0 ? ModelHelper.cleanQuote(ctx.createTableClauses().commentSpec(0).getText()) : null;
 
@@ -473,14 +473,14 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
             table.setQuerySql(Optional.of(querySql));
             super.visitQuery(ctx.query());
             table.setTableData(Optional.of(this.tableData));
-            return new StatementData(StatementType.REPLACE_TABLE_AS_SELECT, Optional.of(table), Optional.of(querySql), Optional.empty());
+            return new StatementLineage(StatementType.REPLACE_TABLE_AS_SELECT, Optional.of(table), Optional.of(querySql), Optional.empty());
         } else {
-            return new StatementData(StatementType.REPLACE_TABLE, Optional.of(table));
+            return new StatementLineage(StatementType.REPLACE_TABLE, Optional.of(table));
         }
     }
 
     @Override
-    public StatementData visitCreateTableLike(SqlBaseParser.CreateTableLikeContext ctx) {
+    public StatementLineage visitCreateTableLike(SqlBaseParser.CreateTableLikeContext ctx) {
         String newDatabaseName = Optional.ofNullable(ctx.target.db).map(RuleContext::getText).orElse(null);
         String newTableName = Optional.ofNullable(ctx.target.table).map(RuleContext::getText).orElse(null);
 
@@ -490,61 +490,61 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
         CreateTableLike dcTable = new CreateTableLike(Optional.of(oldDatabaseName), Optional.of(oldTableName), Optional.of(newDatabaseName), newTableName);
         dcTable.setIfNotExists(ctx.NOT() != null);
 
-        return new StatementData(StatementType.CREATE_TABLE_AS_LIKE, Optional.of(dcTable));
+        return new StatementLineage(StatementType.CREATE_TABLE_AS_LIKE, Optional.of(dcTable));
     }
 
     @Override
-    public StatementData visitDropTable(SqlBaseParser.DropTableContext ctx) {
+    public StatementLineage visitDropTable(SqlBaseParser.DropTableContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         Table table = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
         CommonToken token = new CommonToken(ctx.multipartIdentifier().start.getStartIndex(), ctx.multipartIdentifier().stop.getStopIndex());
         table.setIfExists(ctx.EXISTS() != null);
         table.setToken(Optional.of(token));
-        return new StatementData(StatementType.DROP_TABLE, Optional.of(table));
+        return new StatementLineage(StatementType.DROP_TABLE, Optional.of(table));
     }
 
     @Override
-    public StatementData visitDropView(SqlBaseParser.DropViewContext ctx) {
+    public StatementLineage visitDropView(SqlBaseParser.DropViewContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         View view = new View(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
         view.setIfExists(ctx.EXISTS() != null);
-        return new StatementData(StatementType.DROP_VIEW, Optional.of(view));
+        return new StatementLineage(StatementType.DROP_VIEW, Optional.of(view));
     }
 
     @Override
-    public StatementData visitTruncateTable(SqlBaseParser.TruncateTableContext ctx) {
+    public StatementLineage visitTruncateTable(SqlBaseParser.TruncateTableContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
         Table table = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
-        return new StatementData(StatementType.TRUNCATE_TABLE, Optional.of(table));
+        return new StatementLineage(StatementType.TRUNCATE_TABLE, Optional.of(table));
     }
 
     @Override
-    public StatementData visitRepairTable(SqlBaseParser.RepairTableContext ctx) {
+    public StatementLineage visitRepairTable(SqlBaseParser.RepairTableContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
         Table table = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
-        return new StatementData(StatementType.MSCK_TABLE, Optional.of(table));
+        return new StatementLineage(StatementType.MSCK_TABLE, Optional.of(table));
     }
 
     @Override
-    public StatementData visitRenameTable(SqlBaseParser.RenameTableContext ctx) {
+    public StatementLineage visitRenameTable(SqlBaseParser.RenameTableContext ctx) {
         TableName tableNameFrom = parseTableName(ctx.from);
         TableName tableNameTo = parseTableName(ctx.to);
 
         if (ctx.VIEW() != null) {
             RenameView dcView = new RenameView(tableNameFrom.getCatalogName(), tableNameFrom.getDatabaseName(), tableNameFrom.getTableName(), tableNameTo.getTableName());
-            return new StatementData(StatementType.ALTER_VIEW_RENAME, Optional.of(dcView));
+            return new StatementLineage(StatementType.ALTER_VIEW_RENAME, Optional.of(dcView));
         } else {
             RenameTable dcTable = new RenameTable(tableNameFrom.getCatalogName(), tableNameFrom.getDatabaseName(), tableNameFrom.getTableName(), tableNameTo.getTableName());
             dcTable.setOldToken(Optional.of(new CommonToken(ctx.from.start.getStartIndex(), ctx.from.stop.getStopIndex())));
             dcTable.setNewToken(Optional.of(new CommonToken(ctx.to.start.getStartIndex(), ctx.to.stop.getStopIndex())));
-            return new StatementData(StatementType.ALTER_TABLE_RENAME, Optional.of(dcTable));
+            return new StatementLineage(StatementType.ALTER_TABLE_RENAME, Optional.of(dcTable));
         }
     }
 
     @Override
-    public StatementData visitSetTableProperties(SqlBaseParser.SetTablePropertiesContext ctx) {
+    public StatementLineage visitSetTableProperties(SqlBaseParser.SetTablePropertiesContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         Map<String, String> properties = new HashMap<>();
@@ -567,14 +567,14 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
                 Optional.empty(), Optional.empty());
 
         if (!Optional.ofNullable(ctx.VIEW()).isPresent()) {
-            return new StatementData(StatementType.ALTER_TABLE_PROPERTIES, Optional.of(data));
+            return new StatementLineage(StatementType.ALTER_TABLE_PROPERTIES, Optional.of(data));
         } else {
-            return new StatementData(StatementType.ALTER_VIEW_PROPERTIES, Optional.of(data));
+            return new StatementLineage(StatementType.ALTER_VIEW_PROPERTIES, Optional.of(data));
         }
     }
 
     @Override
-    public StatementData visitAddTableColumns(SqlBaseParser.AddTableColumnsContext ctx) {
+    public StatementLineage visitAddTableColumns(SqlBaseParser.AddTableColumnsContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
         List<Column> columns = ctx.columns.children.stream()
             .filter(it -> it instanceof SqlBaseParser.QualifiedColTypeWithPositionContext)
@@ -603,14 +603,14 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
         Table table = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(columns));
         table.setToken(Optional.of(new CommonToken(ctx.multipartIdentifier().start.getStartIndex(), ctx.multipartIdentifier().stop.getStopIndex())));
         if(ctx.COLUMNS() != null) {
-            return new StatementData(StatementType.ALTER_TABLE_ADD_COLS, Optional.of(table));
+            return new StatementLineage(StatementType.ALTER_TABLE_ADD_COLS, Optional.of(table));
         } else {
-            return new StatementData(StatementType.ALTER_TABLE_ADD_COL, Optional.of(table));
+            return new StatementLineage(StatementType.ALTER_TABLE_ADD_COL, Optional.of(table));
         }
     }
 
     @Override
-    public StatementData visitHiveChangeColumn(SqlBaseParser.HiveChangeColumnContext ctx) {
+    public StatementLineage visitHiveChangeColumn(SqlBaseParser.HiveChangeColumnContext ctx) {
         TableName tableName = parseTableName(ctx.table);
 
         String columnName = ctx.colName.parts.get(0).getText();
@@ -632,11 +632,11 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
         }
 
         AlterColumn data = new AlterColumn(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName(), Optional.of(action));
-        return new StatementData(StatementType.ALTER_TABLE_CHANGE_COL, Optional.of(data));
+        return new StatementLineage(StatementType.ALTER_TABLE_CHANGE_COL, Optional.of(data));
     }
 
     @Override
-    public StatementData visitRenameTableColumn(SqlBaseParser.RenameTableColumnContext ctx) {
+    public StatementLineage visitRenameTableColumn(SqlBaseParser.RenameTableColumnContext ctx) {
         TableName tableName = parseTableName(ctx.table);
 
         String oldName = ctx.from.getText();
@@ -645,95 +645,95 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
         AlterColumnAction action = new AlterColumnAction(Optional.of(oldName), Optional.of(newName));
         AlterColumn dcTable = new AlterColumn(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName(), Optional.of(action));
         dcTable.setToken(Optional.of(new CommonToken(ctx.table.start.getStartIndex(), ctx.table.stop.getStopIndex())));
-        return new StatementData(StatementType.ALTER_TABLE_RENAME_COL, Optional.of(dcTable));
+        return new StatementLineage(StatementType.ALTER_TABLE_RENAME_COL, Optional.of(dcTable));
     }
 
     @Override
-    public StatementData visitAlterTableAlterColumn(SqlBaseParser.AlterTableAlterColumnContext ctx) {
+    public StatementLineage visitAlterTableAlterColumn(SqlBaseParser.AlterTableAlterColumnContext ctx) {
         TableName tableName = parseTableName(ctx.table);
 
         AlterColumnAction action = parseAlterColumnAction(ctx.alterColumnAction());
         action.setColumName(Optional.of(ctx.column.getText()));
         AlterColumn dcTable = new AlterColumn(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName(), Optional.of(action));
         dcTable.setToken(Optional.of(new CommonToken(ctx.table.start.getStartIndex(), ctx.table.stop.getStopIndex())));
-        return new StatementData(StatementType.ALTER_TABLE_CHANGE_COL, Optional.of(dcTable));
+        return new StatementLineage(StatementType.ALTER_TABLE_CHANGE_COL, Optional.of(dcTable));
     }
 
     @Override
-    public StatementData visitDropTableColumns(SqlBaseParser.DropTableColumnsContext ctx) {
+    public StatementLineage visitDropTableColumns(SqlBaseParser.DropTableColumnsContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         AlterColumn dcTable = new AlterColumn(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
         dcTable.setToken(Optional.of(new CommonToken(ctx.multipartIdentifier().start.getStartIndex(), ctx.multipartIdentifier().stop.getStopIndex())));
-        return new StatementData(StatementType.ALTER_TABLE_DROP_COL, Optional.of(dcTable));
+        return new StatementLineage(StatementType.ALTER_TABLE_DROP_COL, Optional.of(dcTable));
     }
 
     @Override
-    public StatementData visitSetTableLocation(SqlBaseParser.SetTableLocationContext ctx) {
+    public StatementLineage visitSetTableLocation(SqlBaseParser.SetTableLocationContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         TableSource tableSource = new TableSource(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
         CommonToken token = new CommonToken(ctx.start.getStartIndex(), ctx.stop.getStopIndex());
         tableSource.getTokens().add(token);
-        return new StatementData(StatementType.ALTER_TABLE_SET_LOCATION, Optional.of(tableSource));
+        return new StatementLineage(StatementType.ALTER_TABLE_SET_LOCATION, Optional.of(tableSource));
     }
 
     @Override
-    public StatementData visitRefreshTable(SqlBaseParser.RefreshTableContext ctx) {
+    public StatementLineage visitRefreshTable(SqlBaseParser.RefreshTableContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
         RefreshData data = new RefreshData(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
 
-        return new StatementData(StatementType.REFRESH_TABLE, Optional.of(data));
+        return new StatementLineage(StatementType.REFRESH_TABLE, Optional.of(data));
     }
 
     @Override
-    public StatementData visitDescribeRelation(SqlBaseParser.DescribeRelationContext ctx) {
+    public StatementLineage visitDescribeRelation(SqlBaseParser.DescribeRelationContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         Table data = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
-        return new StatementData(StatementType.DESC_TABLE, Optional.of(data));
+        return new StatementLineage(StatementType.DESC_TABLE, Optional.of(data));
     }
 
     @Override
-    public StatementData visitShowColumns(SqlBaseParser.ShowColumnsContext ctx) {
+    public StatementLineage visitShowColumns(SqlBaseParser.ShowColumnsContext ctx) {
         TableName tableName = parseTableName(ctx.table);
 
         Table data = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
-        return new StatementData(StatementType.SHOW_COLUMNS, Optional.of(data));
+        return new StatementLineage(StatementType.SHOW_COLUMNS, Optional.of(data));
     }
 
     @Override
-    public StatementData visitShowCreateTable(SqlBaseParser.ShowCreateTableContext ctx) {
+    public StatementLineage visitShowCreateTable(SqlBaseParser.ShowCreateTableContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         Table data = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
-        return new StatementData(StatementType.SHOW_CREATE_TABLE, Optional.of(data));
+        return new StatementLineage(StatementType.SHOW_CREATE_TABLE, Optional.of(data));
     }
 
     @Override
-    public StatementData visitShowTableExtended(SqlBaseParser.ShowTableExtendedContext ctx) {
-        return new StatementData(StatementType.SHOW_TABLE_EXTENDED, Optional.empty());
+    public StatementLineage visitShowTableExtended(SqlBaseParser.ShowTableExtendedContext ctx) {
+        return new StatementLineage(StatementType.SHOW_TABLE_EXTENDED, Optional.empty());
     }
 
     @Override
-    public StatementData visitShowTblProperties(SqlBaseParser.ShowTblPropertiesContext ctx) {
+    public StatementLineage visitShowTblProperties(SqlBaseParser.ShowTblPropertiesContext ctx) {
         TableName tableName = parseTableName(ctx.table);
 
         Table data = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
-        return new StatementData(StatementType.SHOW_TABLE_PROPERTIES, Optional.of(data));
+        return new StatementLineage(StatementType.SHOW_TABLE_PROPERTIES, Optional.of(data));
     }
 
     @Override
-    public StatementData visitAnalyzeTables(SqlBaseParser.AnalyzeTablesContext ctx) {
+    public StatementLineage visitAnalyzeTables(SqlBaseParser.AnalyzeTablesContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         Table data = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
-        return new StatementData(StatementType.ANALYZE_TABLE, Optional.of(data));
+        return new StatementLineage(StatementType.ANALYZE_TABLE, Optional.of(data));
     }
 
     // ---------- partition ------------------
     @Override
-    public StatementData visitAddTablePartition(SqlBaseParser.AddTablePartitionContext ctx) {
+    public StatementLineage visitAddTablePartition(SqlBaseParser.AddTablePartitionContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         List<String> partitions = ctx.children.stream()
@@ -750,11 +750,11 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
 
         Boolean ifNotExists = ctx.NOT() != null;
         AddTablePartition data = new AddTablePartition(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName(), ifNotExists, partitions);
-        return new StatementData(StatementType.ALTER_TABLE_ADD_PARTS, Optional.of(data));
+        return new StatementLineage(StatementType.ALTER_TABLE_ADD_PARTS, Optional.of(data));
     }
 
     @Override
-    public StatementData visitDropTablePartitions(SqlBaseParser.DropTablePartitionsContext ctx) {
+    public StatementLineage visitDropTablePartitions(SqlBaseParser.DropTablePartitionsContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         List<String> partitions = ctx.children.stream()
@@ -770,27 +770,27 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
 
         Boolean ifExists = ctx.EXISTS() != null;
         DropTablePartition data = new DropTablePartition(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName(), ifExists, partitions);
-        return new StatementData(StatementType.ALTER_TABLE_DROP_PARTS, Optional.of(data));
+        return new StatementLineage(StatementType.ALTER_TABLE_DROP_PARTS, Optional.of(data));
     }
 
     @Override
-    public StatementData visitRenameTablePartition(SqlBaseParser.RenameTablePartitionContext ctx) {
+    public StatementLineage visitRenameTablePartition(SqlBaseParser.RenameTablePartitionContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         Table data = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
-        return new StatementData(StatementType.ALTER_TABLE_RENAME_PART, Optional.of(data));
+        return new StatementLineage(StatementType.ALTER_TABLE_RENAME_PART, Optional.of(data));
     }
 
     @Override
-    public StatementData visitShowPartitions(SqlBaseParser.ShowPartitionsContext ctx) {
+    public StatementLineage visitShowPartitions(SqlBaseParser.ShowPartitionsContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         Table data = new Table(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
-        return new StatementData(StatementType.SHOW_PARTITIONS, Optional.of(data));
+        return new StatementLineage(StatementType.SHOW_PARTITIONS, Optional.of(data));
     }
 
     // ----------- view ------------------------
-    public StatementData visitCreateView(SqlBaseParser.CreateViewContext ctx) {
+    public StatementLineage visitCreateView(SqlBaseParser.CreateViewContext ctx) {
         List<String> commentList = ctx.commentSpec().stream()
                 .map(SqlBaseParser.CommentSpecContext::stringLit)
                 .map(RuleContext::getText)
@@ -815,11 +815,11 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
 
         View view = new View(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName(), Optional.of(querySql.get()), Optional.of(comment), ifNotExists, false);
         view.setFunctionNames(this.tableData.getFunctionNames());
-        return new StatementData(StatementType.CREATE_VIEW, Optional.of(view));
+        return new StatementLineage(StatementType.CREATE_VIEW, Optional.of(view));
     }
 
     @Override
-    public StatementData visitAlterViewQuery(SqlBaseParser.AlterViewQueryContext ctx) {
+    public StatementLineage visitAlterViewQuery(SqlBaseParser.AlterViewQueryContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         AtomicReference<String> querySql = new AtomicReference<>("");
@@ -833,12 +833,12 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
 
         View view = new View(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName());
         view.setQuerySql(Optional.of(querySql.get()));
-        return new StatementData(StatementType.ALTER_VIEW_QUERY, Optional.of(view));
+        return new StatementLineage(StatementType.ALTER_VIEW_QUERY, Optional.of(view));
     }
 
     // ------------ function --------------------
     @Override
-    public StatementData visitCreateFunction(SqlBaseParser.CreateFunctionContext ctx) {
+    public StatementLineage visitCreateFunction(SqlBaseParser.CreateFunctionContext ctx) {
         String name = ctx.multipartIdentifier().parts.get(0).getText();
         String classNmae = ctx.className.getText();
 
@@ -851,65 +851,65 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
         }
 
         Function data = new Function(name, temporary, Optional.of(classNmae), Optional.ofNullable(file));
-        return new StatementData(StatementType.CREATE_FUNCTION, Optional.of(data));
+        return new StatementLineage(StatementType.CREATE_FUNCTION, Optional.of(data));
     }
 
     @Override
-    public StatementData visitDropFunction(SqlBaseParser.DropFunctionContext ctx) {
+    public StatementLineage visitDropFunction(SqlBaseParser.DropFunctionContext ctx) {
         String name = ctx.multipartIdentifier().parts.get(0).getText();
         Function data = new Function(name);
-        return new StatementData(StatementType.DROP_FUNCTION, Optional.of(data));
+        return new StatementLineage(StatementType.DROP_FUNCTION, Optional.of(data));
     }
 
     @Override
-    public StatementData visitDescribeFunction(SqlBaseParser.DescribeFunctionContext ctx) {
+    public StatementLineage visitDescribeFunction(SqlBaseParser.DescribeFunctionContext ctx) {
         String name = ctx.describeFuncName().getText();
         Function data = new Function(name);
-        return new StatementData(StatementType.DESC_FUNCTION, Optional.of(data));
+        return new StatementLineage(StatementType.DESC_FUNCTION, Optional.of(data));
     }
 
     @Override
-    public StatementData visitShowFunctions(SqlBaseParser.ShowFunctionsContext ctx) {
-        return new StatementData(StatementType.SHOW_FUNCTIONS);
+    public StatementLineage visitShowFunctions(SqlBaseParser.ShowFunctionsContext ctx) {
+        return new StatementLineage(StatementType.SHOW_FUNCTIONS);
     }
 
     // ------------ cache -----------------------
     @Override
-    public StatementData visitCacheTable(SqlBaseParser.CacheTableContext ctx) {
-        return new StatementData(StatementType.CACHE);
+    public StatementLineage visitCacheTable(SqlBaseParser.CacheTableContext ctx) {
+        return new StatementLineage(StatementType.CACHE);
     }
 
     @Override
-    public StatementData visitUncacheTable(SqlBaseParser.UncacheTableContext ctx) {
-        return new StatementData(StatementType.UNCACHE);
+    public StatementLineage visitUncacheTable(SqlBaseParser.UncacheTableContext ctx) {
+        return new StatementLineage(StatementType.UNCACHE);
     }
 
     @Override
-    public StatementData visitClearCache(SqlBaseParser.ClearCacheContext ctx) {
-        return new StatementData(StatementType.CLEAR_CACHE);
+    public StatementLineage visitClearCache(SqlBaseParser.ClearCacheContext ctx) {
+        return new StatementLineage(StatementType.CLEAR_CACHE);
     }
 
     // ------------- other ---------------------
     @Override
-    public StatementData visitExplain(SqlBaseParser.ExplainContext ctx) {
-        return new StatementData(StatementType.EXPLAIN);
+    public StatementLineage visitExplain(SqlBaseParser.ExplainContext ctx) {
+        return new StatementLineage(StatementType.EXPLAIN);
     }
 
     @Override
-    public StatementData visitUse(SqlBaseParser.UseContext ctx) {
+    public StatementLineage visitUse(SqlBaseParser.UseContext ctx) {
         DatabaseName databaseName = parseDatabase(ctx.multipartIdentifier());
         Database data = new Database(databaseName.getCatalogName(), databaseName.getDatabaseName());
-        return new StatementData(StatementType.USE, Optional.of(data));
+        return new StatementLineage(StatementType.USE, Optional.of(data));
     }
 
     @Override
-    public StatementData visitSetConfiguration(SqlBaseParser.SetConfigurationContext ctx) {
-        return new StatementData(StatementType.SET);
+    public StatementLineage visitSetConfiguration(SqlBaseParser.SetConfigurationContext ctx) {
+        return new StatementLineage(StatementType.SET);
     }
 
     // ------------- insert & query ---------------
     @Override
-    public StatementData visitStatementDefault(SqlBaseParser.StatementDefaultContext ctx) {
+    public StatementLineage visitStatementDefault(SqlBaseParser.StatementDefaultContext ctx) {
         if(ctx.query().ctes() != null) {
             this.isCTE = true;
 
@@ -929,7 +929,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
                             }
                             return null;
                         });
-                return new StatementData(StatementType.SELECT, Optional.of(this.tableData));
+                return new StatementLineage(StatementType.SELECT, Optional.of(this.tableData));
             }
         }
         if (StringUtils.equalsIgnoreCase("select", ctx.start.getText())) {
@@ -937,13 +937,13 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
             super.visitStatementDefault(ctx);
 
             this.tableData.setLimit(limit);
-            return new StatementData(StatementType.SELECT, Optional.of(this.tableData));
+            return new StatementLineage(StatementType.SELECT, Optional.of(this.tableData));
         }
         return null;
     }
 
     @Override
-    public StatementData visitDmlStatement(SqlBaseParser.DmlStatementContext ctx) {
+    public StatementLineage visitDmlStatement(SqlBaseParser.DmlStatementContext ctx) {
         if(ctx.ctes() != null) {
             this.isCTE = true;
 
@@ -983,7 +983,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
                 }
 
                 if (this.currentOptType == StatementType.INSERT_SELECT) {
-                    return new StatementData(StatementType.INSERT_SELECT, Optional.of(tableData), Optional.of(querySql), Optional.empty());
+                    return new StatementLineage(StatementType.INSERT_SELECT, Optional.of(tableData), Optional.of(querySql), Optional.empty());
                 }
             }
             return null;
@@ -1018,12 +1018,12 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
 
             if (this.currentOptType == StatementType.INSERT_VALUES) {
                 if (this.values.size() != 0) {
-                    return new StatementData(StatementType.INSERT_VALUES, Optional.of(tableData), Optional.empty(), Optional.of(values));
+                    return new StatementLineage(StatementType.INSERT_VALUES, Optional.of(tableData), Optional.empty(), Optional.of(values));
                 } else {
-                    return new StatementData(StatementType.INSERT_VALUES, Optional.of(tableData), Optional.empty(), Optional.of(singleValues));
+                    return new StatementLineage(StatementType.INSERT_VALUES, Optional.of(tableData), Optional.empty(), Optional.of(singleValues));
                 }
             } else {
-                return new StatementData(StatementType.INSERT_SELECT, Optional.of(tableData), Optional.of(querySql), Optional.empty());
+                return new StatementLineage(StatementType.INSERT_SELECT, Optional.of(tableData), Optional.of(querySql), Optional.empty());
             }
         } else if(ctx.dmlStatementNoWith() instanceof SqlBaseParser.MultiInsertQueryContext) {
             this.currentOptType = StatementType.MULTI_INSERT;
@@ -1043,7 +1043,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
                 }
             }
 
-            return new StatementData(StatementType.MULTI_INSERT, Optional.of(tableData));
+            return new StatementLineage(StatementType.MULTI_INSERT, Optional.of(tableData));
         } else if (ctx.dmlStatementNoWith() instanceof SqlBaseParser.UpdateTableContext ||
                 ctx.dmlStatementNoWith() instanceof SqlBaseParser.DeleteFromTableContext ||
                 ctx.dmlStatementNoWith() instanceof SqlBaseParser.MergeIntoTableContext) {
@@ -1057,16 +1057,16 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     //--------- update/delete sql-------------------------------------------------
 
     @Override
-    public StatementData visitDeleteFromTable(SqlBaseParser.DeleteFromTableContext ctx) {
+    public StatementLineage visitDeleteFromTable(SqlBaseParser.DeleteFromTableContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
         String where = ctx.whereClause() != null ? StringUtils.substring(command.get(), ctx.whereClause().start.getStopIndex() + 1) : null;
 
         DeleteTable update = new DeleteTable(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName(), Optional.of(StringUtils.trim(where)));
-        return new StatementData(StatementType.DELETE, Optional.of(update));
+        return new StatementLineage(StatementType.DELETE, Optional.of(update));
     }
 
     @Override
-    public StatementData visitUpdateTable(SqlBaseParser.UpdateTableContext ctx) {
+    public StatementLineage visitUpdateTable(SqlBaseParser.UpdateTableContext ctx) {
         TableName tableName = parseTableName(ctx.multipartIdentifier());
 
         Map<String, String> upset = new HashMap();
@@ -1082,11 +1082,11 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
 
         UpdateTable update = new UpdateTable(tableName.getCatalogName(), tableName.getDatabaseName(), tableName.getTableName(), Optional.ofNullable(upset),
                 Optional.ofNullable(StringUtils.trim(where)));
-        return new StatementData(StatementType.UPDATE, Optional.of(update));
+        return new StatementLineage(StatementType.UPDATE, Optional.of(update));
     }
 
     @Override
-    public StatementData visitMergeIntoTable(SqlBaseParser.MergeIntoTableContext ctx) {
+    public StatementLineage visitMergeIntoTable(SqlBaseParser.MergeIntoTableContext ctx) {
         this.currentOptType = StatementType.MERGE_INTO_TABLE;
 
         TableName tableName = parseTableName(ctx.target);
@@ -1109,12 +1109,12 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
 
             deltaMerge.getSourceTables().addAll(this.tableData.getInputTables());
         }
-        return new StatementData(StatementType.MERGE_INTO_TABLE, Optional.of(deltaMerge));
+        return new StatementLineage(StatementType.MERGE_INTO_TABLE, Optional.of(deltaMerge));
     }
 
     // ------------- private method ---------------
     @Override
-    public StatementData visitFunctionName(SqlBaseParser.FunctionNameContext ctx) {
+    public StatementLineage visitFunctionName(SqlBaseParser.FunctionNameContext ctx) {
         if (StatementType.SELECT == this.currentOptType ||
                 StatementType.CREATE_VIEW == this.currentOptType ||
                 StatementType.INSERT_SELECT == this.currentOptType ||
@@ -1131,7 +1131,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitQueryTermDefault(SqlBaseParser.QueryTermDefaultContext ctx) {
+    public StatementLineage visitQueryTermDefault(SqlBaseParser.QueryTermDefaultContext ctx) {
         if (this.querySql == null) {
             this.querySql = StringUtils.substring(this.command.get(), ctx.start.getStartIndex());
         }
@@ -1139,7 +1139,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitNamedQuery(SqlBaseParser.NamedQueryContext ctx) {
+    public StatementLineage visitNamedQuery(SqlBaseParser.NamedQueryContext ctx) {
         if (this.isCTE) {
             this.tableData.getCteTempTables().add(ctx.getChild(0).getText());
         }
@@ -1147,7 +1147,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitMultipartIdentifier(SqlBaseParser.MultipartIdentifierContext ctx) {
+    public StatementLineage visitMultipartIdentifier(SqlBaseParser.MultipartIdentifierContext ctx) {
         TableName tableNameObj = parseTableName(ctx);
         Optional<String> databaseName = tableNameObj.getDatabaseName();
         String tableName = tableNameObj.getTableName();
@@ -1176,13 +1176,13 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitInlineTableDefault1(SqlBaseParser.InlineTableDefault1Context ctx) {
+    public StatementLineage visitInlineTableDefault1(SqlBaseParser.InlineTableDefault1Context ctx) {
         this.currentOptType = StatementType.INSERT_VALUES;
         return super.visitInlineTableDefault1(ctx);
     }
 
     @Override
-    public StatementData visitRowConstructor(SqlBaseParser.RowConstructorContext ctx) {
+    public StatementLineage visitRowConstructor(SqlBaseParser.RowConstructorContext ctx) {
         List<String> row = ctx.children.stream()
                 .filter(it -> it instanceof SqlBaseParser.NamedExpressionContext)
                 .map(it -> {
@@ -1195,7 +1195,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitPartitionVal(SqlBaseParser.PartitionValContext ctx) {
+    public StatementLineage visitPartitionVal(SqlBaseParser.PartitionValContext ctx) {
         if (ctx.getChildCount() == 1) {
             partitions.put(ctx.getChild(0).getText(), "__dynamic__");
         } else {
@@ -1207,7 +1207,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitInlineTable(SqlBaseParser.InlineTableContext ctx) {
+    public StatementLineage visitInlineTable(SqlBaseParser.InlineTableContext ctx) {
         ctx.children.stream()
                 .filter(it -> it instanceof SqlBaseParser.ExpressionContext)
                 .map(it -> {
@@ -1224,7 +1224,7 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitQueryPrimaryDefault(SqlBaseParser.QueryPrimaryDefaultContext ctx) {
+    public StatementLineage visitQueryPrimaryDefault(SqlBaseParser.QueryPrimaryDefaultContext ctx) {
         if (this.insertSql) {
             this.currentOptType = StatementType.INSERT_SELECT;
         }
@@ -1232,13 +1232,13 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitFromClause(SqlBaseParser.FromClauseContext ctx) {
+    public StatementLineage visitFromClause(SqlBaseParser.FromClauseContext ctx) {
         this.multiInsertToken = Optional.of("from");
         return super.visitFromClause(ctx);
     }
 
     @Override
-    public StatementData visitMultiInsertQueryBody(SqlBaseParser.MultiInsertQueryBodyContext ctx) {
+    public StatementLineage visitMultiInsertQueryBody(SqlBaseParser.MultiInsertQueryBodyContext ctx) {
         this.multiInsertToken = Optional.of("insert");
         Optional.ofNullable(ctx.insertInto())
                 .map(obj -> {
@@ -1262,13 +1262,13 @@ public class SparkSQLTableLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
     }
 
     @Override
-    public StatementData visitQueryOrganization(SqlBaseParser.QueryOrganizationContext ctx) {
+    public StatementLineage visitQueryOrganization(SqlBaseParser.QueryOrganizationContext ctx) {
         this.limit = Optional.ofNullable(ctx.limit).map(text -> Integer.parseInt(text.getText()));
         return super.visitQueryOrganization(ctx);
     }
 
     @Override
-    public StatementData visitTypeConstructor(SqlBaseParser.TypeConstructorContext ctx) {
+    public StatementLineage visitTypeConstructor(SqlBaseParser.TypeConstructorContext ctx) {
         String valueType = ctx.identifier().getText().toUpperCase();
         if (!("DATE".equals(valueType) || "TIME".equals(valueType)
                 || "TIMESTAMP".equals(valueType) || "INTERVAL".equals(valueType)

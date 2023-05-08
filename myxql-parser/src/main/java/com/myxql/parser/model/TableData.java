@@ -11,7 +11,7 @@ public final class TableData extends Statement {
     private Optional<InsertMode> insertMode;
     private Optional<HashMap> partitions;
     // 字段血缘
-    private Optional<List<ColumnData>> columnDatas;
+    private Optional<List<ColumnLineage>> columnDatas;
 
     public List<String> getCteTempTables() {
         return this.cteTempTables;
@@ -61,11 +61,11 @@ public final class TableData extends Statement {
         this.partitions = var1;
     }
 
-    public Optional<List<ColumnData>> getColumnDatas() {
+    public Optional<List<ColumnLineage>> getColumnDatas() {
         return columnDatas;
     }
 
-    public void setColumnDatas(Optional<List<ColumnData>> columnDatas) {
+    public void setColumnDatas(Optional<List<ColumnLineage>> columnDatas) {
         this.columnDatas = columnDatas;
     }
 

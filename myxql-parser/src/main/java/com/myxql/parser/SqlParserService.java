@@ -1,6 +1,6 @@
 package com.myxql.parser;
 
-import com.myxql.parser.model.StatementData;
+import com.myxql.parser.model.StatementLineage;
 
 /**
  * SqlParserService
@@ -21,10 +21,10 @@ public interface SqlParserService {
     /**
      * sql解析表元数据
      */
-    StatementData parseSqlTableLineage(String sql);
+    StatementLineage parseSqlTableLineage(String sql);
 
     /**
      * sql解析字段元数据
      */
-    StatementData parseSqlFieldLineage(String sql);
+    StatementLineage parseSqlFieldLineage(String sql);
 }

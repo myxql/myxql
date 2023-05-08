@@ -1,20 +1,20 @@
 package com.myxql.parser.spark.parser;
 
 import com.myxql.parser.SqlParserAbstract;
-import com.myxql.parser.model.StatementData;
+import com.myxql.parser.model.StatementLineage;
 
 public class MySparkSQLParser extends SqlParserAbstract {
     @Override
-    public StatementData parseSqlTableLineage(String sql) {
+    public StatementLineage parseSqlTableLineage(String sql) {
         SparkSQLTableLineageParser tableLineageParser = new SparkSQLTableLineageParser();
-        StatementData data = tableLineageParser.parse(sql);
+        StatementLineage data = tableLineageParser.parse(sql);
         return data;
     }
 
     @Override
-    public StatementData parseSqlFieldLineage(String sql) {
+    public StatementLineage parseSqlFieldLineage(String sql) {
         SparkSQLFieldLineageParser fieldLineageParser = new SparkSQLFieldLineageParser();
-        StatementData data = fieldLineageParser.parse(sql);
+        StatementLineage data = fieldLineageParser.parse(sql);
         return data;
     }
 

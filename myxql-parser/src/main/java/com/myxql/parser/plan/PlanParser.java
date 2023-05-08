@@ -1,7 +1,7 @@
 package com.myxql.parser.plan;
 
 import com.alibaba.fastjson.JSONObject;
-import com.myxql.parser.model.ColumnData;
+import com.myxql.parser.model.ColumnLineage;
 import com.myxql.parser.model.ColumnName;
 import com.myxql.parser.model.SelectItem;
 import com.myxql.parser.model.TableData;
@@ -25,10 +25,10 @@ public class PlanParser {
         this.hasCtes = insertInto.hasCtes();
         this.ctes = insertInto.getCtes();
 
-        List<ColumnData> resultList = new ArrayList<>();
+        List<ColumnLineage> resultList = new ArrayList<>();
         for(LogicalPlan logicalPlan : insertInto.getInsertIntos()) {
             if(insertInto.getTargetType().equals(InsertInto.TARGET_TYPE_TABLE)) {
-                List<ColumnData> retList = this.parseSingleInsertTable((InsertIntoTable) logicalPlan);
+                List<ColumnLineage> retList = this.parseSingleInsertTable((InsertIntoTable) logicalPlan);
                 resultList.addAll(retList);
             } else {
                 System.out.println("unsupport into dir statement");
@@ -40,8 +40,8 @@ public class PlanParser {
         return tableData;
     }
 
-    private List<ColumnData> parseSingleInsertTable(InsertIntoTable insertIntoTable) {
-        List<ColumnData> targetColumnList = new ArrayList<>();
+    private List<ColumnLineage> parseSingleInsertTable(InsertIntoTable insertIntoTable) {
+        List<ColumnLineage> targetColumnList = new ArrayList<>();
         QueryData queryData = ((QueryData) insertIntoTable.getQuery());
         List<ColumnName> columnNameList= this.getTargetColumnList(queryData);
 
@@ -57,8 +57,8 @@ public class PlanParser {
                 }
                 targetColumnName.setDbName(insertIntoTable.getTableName().getDatabaseName());
                 targetColumnName.setTableName(insertIntoTable.getTableName().getTableName());
-                ColumnData columnData = new ColumnData();
-                columnData.setTargetField(targetColumnName);
+                ColumnLineage columnLineage = new ColumnLineage();
+                columnLineage.setTargetField(targetColumnName);
                 Set<ColumnName> sourceFields = new HashSet<>();
                 for(Pair<SelectItem, QueryData> itemPair : sourceItems) {
                     SelectItem item = itemPair.getLeft();
@@ -69,38 +69,38 @@ public class PlanParser {
                     this.findFieldSource(item.getAlias(), itemPair.getRight());
                     sourceFields.addAll(this.sourceFieldResult.getSourceFields());
                 }
-                columnData.setSourceFields(sourceFields);
-                targetColumnList.add(columnData);
+                columnLineage.setSourceFields(sourceFields);
+                targetColumnList.add(columnLineage);
             }
         } else {
             columnNameList.forEach(columnName -> {
-                ColumnData columnData = new ColumnData();
+                ColumnLineage columnLineage = new ColumnLineage();
                 ColumnName targetColumnName = new ColumnName();
                 targetColumnName.setDbName(insertIntoTable.getTableName().getDatabaseName());
                 targetColumnName.setTableName(insertIntoTable.getTableName().getTableName());
                 targetColumnName.setFieldName(columnName.getFieldName());
-                columnData.setTargetField(targetColumnName);
+                columnLineage.setTargetField(targetColumnName);
 
                 this.sourceFieldResult = new SourceFieldResult();
                 this.findFieldSource(targetColumnName.getFieldName(), queryData);
-                columnData.setSourceFields(this.sourceFieldResult.getSourceFields());
+                columnLineage.setSourceFields(this.sourceFieldResult.getSourceFields());
 
-                targetColumnList.add(columnData);
+                targetColumnList.add(columnLineage);
             });
         }
 
         // 指定了插入字段
-        List<ColumnData> resultList = new ArrayList<>();
+        List<ColumnLineage> resultList = new ArrayList<>();
         for(int idx = 0; idx < insertIntoTable.getUserSpecifiedCols().size(); idx++) {
             String colName = insertIntoTable.getUserSpecifiedCols().get(idx);
             ColumnName targetColumnName = new ColumnName();
             targetColumnName.setDbName(insertIntoTable.getTableName().getDatabaseName());
             targetColumnName.setTableName(insertIntoTable.getTableName().getTableName());
             targetColumnName.setFieldName(colName);
-            ColumnData columnData = new ColumnData();
-            columnData.setTargetField(targetColumnName);
-            columnData.setSourceFields(targetColumnList.get(idx).getSourceFields());
-            resultList.add(columnData);
+            ColumnLineage columnLineage = new ColumnLineage();
+            columnLineage.setTargetField(targetColumnName);
+            columnLineage.setSourceFields(targetColumnList.get(idx).getSourceFields());
+            resultList.add(columnLineage);
         }
 
         if(resultList.isEmpty()) {
