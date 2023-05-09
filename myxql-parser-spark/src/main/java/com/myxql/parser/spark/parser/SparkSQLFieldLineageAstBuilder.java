@@ -630,17 +630,6 @@ public class SparkSQLFieldLineageAstBuilder extends SqlBaseParserBaseVisitor<Sta
         return ctx.capturingIdent().stream().map(ident -> ident.getText()).collect(toList());
     }
 
-    /* ********************************************************************************************
-     * Expression parsing
-     * ******************************************************************************************** */
-    /**
-     * Create an expression from the given context. This method just passes the context on to the
-     * visitor and only takes care of typing (We assume that the visitor returns an Expression here).
-     */
-    protected Expression expression(ParserRuleContext ctx) {
-        return typedVisit(ctx);
-    }
-
     private LogicalPlan withCTE(SqlBaseParser.CtesContext ctx, LogicalPlan plan) {
         for(SqlBaseParser.NamedQueryContext nCtx : ctx.namedQuery()) {
             QueryData query = this.typedVisit(nCtx.query());
