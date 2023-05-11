@@ -92,7 +92,7 @@ public class MyJobParserTest {
 
     @Test
     public void setConfigTest2() {
-        String sql = "demo.jar com.example.Demo 'hello \"test\" world' param2 \n param3";
+        String sql = "demo.jar com.myxql.Demo 'hello \"test\" world' param2 \n param3";
 
         List<StatementLineage> statementLineages = MyJobParser.parse(sql);
         Assert.assertEquals(1, statementLineages.size());
